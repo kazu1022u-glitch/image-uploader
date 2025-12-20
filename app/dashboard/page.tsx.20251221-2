@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+type ImageItem = {
+  name: string;
+  url: string;
+  path: string;
+};
+
+export default function DashboardPage() {
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setMessage("ログインしてください");
+        return;
+      }
+
+      const { data: files, error } = await supabase.storage
+        .from("images")
+        .list(user.id);
+
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
+
+      const imageList: ImageItem[] = [];
+
+      for (const file of files ?? []) {
+        const path = `${user.id}/${file.name}`;
+
+        const { data } = await supabase.storage
+          .from("images")
+          .createSignedUrl(path, 300);
+
+        if (data?.signedUrl) {
+          imageList.push({
+            name: file.name,
+            url: data.signedUrl,
+            path,
+          });
+        }
+      }
+
+      setImages(imageList);
+    };
+
+    fetchImages();
+  }, []);
+
+  // 🗑 削除処理
+  const handleDelete = async (path: string) => {
+    const ok = confirm("この画像を削除しますか？");
+    if (!ok) return;
+
+    const { error } = await supabase.storage
+      .from("images")
+      .remove([path]);
+
+    if (error) {
+      alert(`削除失敗: ${error.message}`);
+      return;
+    }
+
+    // UI 即時反映
+    setImages((prev) => prev.filter((img) => img.path !== path));
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>画像一覧</h1>
+      {message && <p>{message}</p>}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 200px)",
+          gap: 16,
+        }}
+      >
+        {images.map((img) => (
+          <div key={img.path}>
+            <img
+              src={img.url}
+              alt={img.name}
+              style={{ width: "100%", borderRadius: 8 }}
+            />
+            <button
+              onClick={() => handleDelete(img.path)}
+              style={{
+                marginTop: 8,
+                width: "100%",
+                background: "#e11d48",
+                color: "white",
+                border: "none",
+                padding: 6,
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+            >
+              削除
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
