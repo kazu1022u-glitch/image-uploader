@@ -14,17 +14,24 @@ export default function DashboardPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 画像一覧取得
-  const fetchImages = async () => {
+  // ログインユーザー取得
+  const getUser = async () => {
     const {
       data: { user },
-      error: userError,
+      error,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      console.error("ユーザー取得失敗", userError);
-      return;
+    if (error || !user) {
+      console.error("ユーザー取得失敗", error);
+      return null;
     }
+    return user;
+  };
+
+  // 画像一覧取得（自分の user.id 配下のみ）
+  const fetchImages = async () => {
+    const user = await getUser();
+    if (!user) return;
 
     const { data, error } = await supabase.storage
       .from("images")
@@ -35,7 +42,7 @@ export default function DashboardPage() {
       return;
     }
 
-    const signedUrls: ImageItem[] = [];
+    const signedImages: ImageItem[] = [];
 
     for (const item of data ?? []) {
       const { data: signed } = await supabase.storage
@@ -43,34 +50,30 @@ export default function DashboardPage() {
         .createSignedUrl(`${user.id}/${item.name}`, 60 * 5);
 
       if (signed?.signedUrl) {
-        signedUrls.push({
+        signedImages.push({
           name: item.name,
           url: signed.signedUrl,
         });
       }
     }
 
-    setImages(signedUrls);
+    setImages(signedImages);
   };
 
-  // 初回読み込み
+  // 初回ロード
   useEffect(() => {
     fetchImages();
   }, []);
 
-  // アップロード処理
+  // アップロード
   const handleUpload = async () => {
     if (!file) {
       setMessage("ファイルを選択してください");
       return;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const user = await getUser();
+    if (!user) {
       setMessage("ログインしてください");
       return;
     }
@@ -98,44 +101,89 @@ export default function DashboardPage() {
     fetchImages();
   };
 
+  // 削除
+  const handleDelete = async (imageName: string) => {
+    const user = await getUser();
+    if (!user) return;
+
+    const ok = confirm("この画像を削除しますか？");
+    if (!ok) return;
+
+    const { error } = await supabase.storage
+      .from("images")
+      .remove([`${user.id}/${imageName}`]);
+
+    if (error) {
+      console.error("Delete error:", error);
+      alert("削除に失敗しました");
+      return;
+    }
+
+    fetchImages();
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <h1>ダッシュボード</h1>
 
-      <h2>画像アップロード</h2>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
-      <br />
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? "アップロード中..." : "アップロード"}
-      </button>
-
-      <p>{message}</p>
+      {/* アップロード */}
+      <section>
+        <h2>画像アップロード</h2>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+        <br />
+        <button onClick={handleUpload} disabled={loading}>
+          {loading ? "アップロード中..." : "アップロード"}
+        </button>
+        <p>{message}</p>
+      </section>
 
       <hr />
 
-      <h2>あなたの画像一覧</h2>
+      {/* 一覧＋削除 */}
+      <section>
+        <h2>あなたの画像一覧</h2>
 
-      {images.length === 0 && <p>画像はまだありません</p>}
+        {images.length === 0 && <p>画像はまだありません</p>}
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        {images.map((img) => (
-          <img
-            key={img.name}
-            src={img.url}
-            alt="uploaded"
-            style={{
-              width: 200,
-              height: "auto",
-              borderRadius: 8,
-              border: "1px solid #ccc",
-            }}
-          />
-        ))}
-      </div>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {images.map((img) => (
+            <div
+              key={img.name}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                padding: 8,
+                width: 220,
+              }}
+            >
+              <img
+                src={img.url}
+                alt="uploaded"
+                style={{ width: "100%", borderRadius: 4 }}
+              />
+              <button
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  background: "#e54848",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  padding: "6px 0",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleDelete(img.name)}
+              >
+                削除
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
