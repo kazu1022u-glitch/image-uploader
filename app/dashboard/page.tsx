@@ -129,8 +129,11 @@ export default function DashboardPage() {
       backgroundImage: "url('/dashboard-bg.png')",
     }}
   >
-      <h1>ダッシュボード</h1>
+      <h1>ダッシュボード
+          いい立ち飲み屋があったら教えてください。
 
+      </h1>
+\n
       {/* アップロード */}
       <section>
         <h2>画像アップロード</h2>
