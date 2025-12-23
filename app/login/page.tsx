@@ -20,11 +20,11 @@ export default function LoginPage() {
     })
     setLoading(false)
 
-    if (error) {
-      setMessage(error.message)
-    } else {
-      setMessage('確認メールを送信しました')
-    }
+    // if (error) {
+    //   setMessage(error.message)
+    // } else {
+    //   setMessage('確認メールを送信しました')
+    // }
   }
 
   const signIn = async () => {
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow">
         <h1 className="mb-6 text-center text-2xl font-bold">
-          ログイン / 新規登録
+          ログイン / 新規登録/このサイトは危険なので利用しないでください。
         </h1>
 
         {/* Email */}
