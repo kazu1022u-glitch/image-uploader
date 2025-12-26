@@ -133,7 +133,7 @@ export default function DashboardPage() {
           いい立ち飲み屋があったら教えてください。
 
       </h1>
-\n
+
       {/* アップロード */}
       <section>
         <h2>画像アップロード</h2>

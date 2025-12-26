@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+, "app/page.tsx.bak20251220", "app/login/page.tsx20251223-2", "app/login/page.tsx", "app/dashboard/page.tsx20251223-4", "app/dashboard/page.tsx20251223-3", "app/dashboard/page.tsx20251223-2", "app/dashboard/page.tsx20251223", "app/dashboard/page.tsx.20251221-3", "app/dashboard/page.tsx.20251221-2", "app/dashboard/page.tsx.20251221", "app/dashboard/page.tsx.20251220", "app/dashboard/page.tsx20251220-2", "app/dashboard/page.tsx.202512220"  ],, "a, "app/dashboard/page.tsx.20251224"pp/login/page.tsx20251224"
+  "exclude": [
+    "node_modules"
+  ]
+}
